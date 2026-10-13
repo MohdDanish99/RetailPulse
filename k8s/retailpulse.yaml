@@ -1,0 +1,68 @@
+# Local test with kind:
+#   docker build -f docker/Dockerfile.api -t retailpulse-api:latest .
+#   docker build -f docker/Dockerfile.dashboard -t retailpulse-dashboard:latest .
+#   kind load docker-image retailpulse-api:latest retailpulse-dashboard:latest
+#   kubectl apply -f k8s/retailpulse.yaml
+# The PVC must contain data/processed/* (run the pipeline job or copy files in).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: { name: retailpulse-data }
+spec:
+  accessModes: [ReadWriteOnce]
+  resources: { requests: { storage: 1Gi } }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: retailpulse-api }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: retailpulse-api } }
+  template:
+    metadata: { labels: { app: retailpulse-api } }
+    spec:
+      containers:
+        - name: api
+          image: retailpulse-api:latest
+          imagePullPolicy: IfNotPresent
+          ports: [{ containerPort: 8000 }]
+          readinessProbe: { httpGet: { path: /health, port: 8000 }, initialDelaySeconds: 5 }
+          resources: { requests: { cpu: 100m, memory: 256Mi }, limits: { memory: 512Mi } }
+          volumeMounts: [{ name: data, mountPath: /app/data }]
+      volumes:
+        - name: data
+          persistentVolumeClaim: { claimName: retailpulse-data }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: retailpulse-api }
+spec:
+  selector: { app: retailpulse-api }
+  ports: [{ port: 80, targetPort: 8000 }]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: retailpulse-dashboard }
+spec:
+  replicas: 1
+  selector: { matchLabels: { app: retailpulse-dashboard } }
+  template:
+    metadata: { labels: { app: retailpulse-dashboard } }
+    spec:
+      containers:
+        - name: dashboard
+          image: retailpulse-dashboard:latest
+          imagePullPolicy: IfNotPresent
+          ports: [{ containerPort: 8501 }]
+          resources: { requests: { cpu: 100m, memory: 256Mi }, limits: { memory: 768Mi } }
+          volumeMounts: [{ name: data, mountPath: /app/data }]
+      volumes:
+        - name: data
+          persistentVolumeClaim: { claimName: retailpulse-data }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: retailpulse-dashboard }
+spec:
+  type: NodePort
+  selector: { app: retailpulse-dashboard }
+  ports: [{ port: 80, targetPort: 8501 }]
