@@ -1,70 +1,97 @@
 # RetailPulse: AI-Powered Customer Analytics & Demand Forecasting
 
-Analyzes sales, customer and inventory data to deliver **demand forecasting, customer segmentation,
-churn prediction and inventory optimization**, with an API, dashboard and MLOps tooling.
+RetailPulse is an AI-powered customer analytics and demand forecasting platform that analyzes sales, customer, and inventory data to help retail businesses make smarter decisions.
+
+The platform provides demand forecasting, customer segmentation, churn prediction, and inventory optimization through machine learning, APIs, dashboards, and MLOps tools.
 
 ## Architecture
 
-```
-Raw CSV -> ETL (clean, dedupe, returns, daily SKU aggregation) -> data/processed/*.parquet
-                |
-   +------------+-------------+--------------------+
-Forecasting   Segmentation   Churn model      Inventory optimizer
-(baseline,    (RFM+KMeans)   (LogReg vs       (safety stock,
- Prophet,                     GradBoosting)    reorder point, EOQ)
- LSTM)
-   +------------+-------------+--------------------+
-                |
-          MLflow tracking  ->  FastAPI  +  Streamlit  ->  Docker -> Kubernetes
-                |
-        PSI drift detection (retrain trigger)
+```text
+Raw CSV Data
+    |
+    v
+ETL Pipeline (Cleaning, Deduplication, Aggregation)
+    |
+    v
+Processed Data (Parquet)
+    |
+    +-- Demand Forecasting
+    +-- Customer Segmentation (RFM + KMeans)
+    +-- Churn Prediction
+    +-- Inventory Optimization
+    |
+    v
+MLflow Tracking
+    |
+    v
+FastAPI + Streamlit Dashboard
+    |
+    v
+Docker and Kubernetes
 ```
 
-## Quick start
+## Quick Start
+
+Create and activate a Python virtual environment.
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
+python -m venv .venv
+```
+
+On Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Install the project dependencies according to the repository instructions, then run the available pipeline commands.
+
+```bash
 make setup
-make all          # synthetic data -> ETL -> forecast -> segments -> churn -> inventory -> drift
-make dashboard    # http://localhost:8501
-make api          # http://localhost:8000/docs
-make mlflow       # http://localhost:5000
+make all
+make dashboard
+make api
+make mlflow
 make test
 ```
 
-### Using the real dataset
-Download **Online Retail II** from Kaggle, export it as CSV to `data/raw/online_retail_II.csv`
-(columns: Invoice, StockCode, Description, Quantity, InvoiceDate, Price, Customer ID, Country),
-then skip `make data` and run `make etl forecast segment churn`.
-The real data has no inventory table, so keep the generated `data/raw/inventory.csv` as a placeholder
-or replace it with your own (StockCode, stock_on_hand, lead_time_days, unit_cost).
+Note: These commands require the corresponding Makefile targets and dependencies to be configured.
 
-## Modeling notes
-- **Forecasting:** time-based holdout (last 28 days), never random. Metric is WAPE (safe with zero-demand days) and RMSE. Every model is compared against a seasonal-naive baseline.
-- **Churn:** churn = no purchase in the next 90 days. Features come only from data before the cutoff (no leakage). Judge with PR-AUC and recall, compared with the churn base rate.
-- **Segmentation:** RFM, log-scaled, KMeans (k=4), with silhouette scores for choosing k.
-- **Inventory:** safety stock = z * sigma_daily * sqrt(lead time); ROP = demand * lead time + safety stock; EOQ.
-- **Drift:** PSI per feature (>0.2 triggers retraining).
+## Main Features
 
-## Results (fill in after running on your data)
-| Task | Model | Metric | Baseline | Improvement |
-|---|---|---|---|---|
-| Forecasting | Prophet | WAPE | seasonal naive | |
-| Churn | Gradient boosting | PR-AUC | logistic regression | |
-| Segmentation | KMeans k=4 | silhouette | n/a | |
+- **Demand Forecasting:** Predict future sales and compare forecasting models against a seasonal-naive baseline.
+- **Customer Segmentation:** Group customers using Recency, Frequency, and Monetary (RFM) analysis and KMeans.
+- **Churn Prediction:** Identify customers who may stop purchasing.
+- **Inventory Optimization:** Calculate safety stock, reorder points, and economic order quantities.
+- **Model Monitoring:** Track model performance and detect data drift using the Population Stability Index (PSI).
+- **API and Dashboard:** Provide model outputs through FastAPI and Streamlit.
+- **MLOps:** Track experiments with MLflow and support containerization with Docker.
+
+## Dataset
+
+The project can use synthetic retail data for initial testing or the Online Retail II dataset for real-world analysis.
+
+For real data, prepare the dataset according to the ETL pipeline's expected columns and configuration. Inventory optimization also requires inventory information such as stock levels, supplier lead times, and unit costs.
+
+## Evaluation
+
+Forecasting models can be evaluated using WAPE and RMSE. Churn models can be evaluated using PR-AUC and recall. Customer segmentation can be evaluated using silhouette scores.
+
+Record actual evaluation results after running the pipeline. Model performance depends on the dataset and evaluation setup.
 
 ## Docker and Kubernetes
-```bash
-docker compose up --build      # api :8000, dashboard :8501, mlflow :5000
-kubectl apply -f k8s/retailpulse.yaml   # see header comments for kind/minikube steps
-```
-Run the pipeline (`make all`) first so `data/processed/` exists.
+
+The project can be containerized with Docker Compose and deployed to Kubernetes using the provided configuration files, once the required services and configurations are ready.
 
 ## Roadmap
-- [ ] Swap synthetic data for Online Retail II and record real results
-- [ ] LSTM comparison (`pip install -r requirements-lstm.txt`, `python -m src.forecasting.train --lstm`)
-- [ ] Orchestrate the pipeline with Prefect or Airflow
-- [ ] Scheduled retraining on drift (GitHub Actions cron or a Kubernetes CronJob)
-- [ ] Register models in the MLflow Model Registry and serve from it
-- [ ] Evidently reports, Prometheus/Grafana monitoring
-- [ ] Cloud deploy (GKE/EKS) with Ingress
+
+- [ ] Evaluate models on real retail data.
+- [ ] Compare LSTM forecasting with baseline models.
+- [ ] Add workflow orchestration using Prefect or Airflow.
+- [ ] Automate model retraining.
+- [ ] Add model registry and monitoring dashboards.
+- [ ] Deploy to a cloud environment.
+
+## Project Status
+
+This project is intended as an end-to-end retail analytics platform. Features and deployment capabilities should be verified by running the implementation and its tests.
