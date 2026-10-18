@@ -5,6 +5,14 @@ from src.config import DATA_PROC
 
 app = FastAPI(title="RetailPulse API", version="0.1.0")
 
+@app.get("/")
+def root():
+    return {
+        "name": "RetailPulse API",
+        "docs": "/docs",
+        "endpoints": ["/health", "/forecast/{sku}", "/segment/{customer_id}",
+                      "/churn/{customer_id}", "/inventory/{sku}"],
+    }
 
 def _read(name: str) -> pd.DataFrame:
     path = DATA_PROC / name
