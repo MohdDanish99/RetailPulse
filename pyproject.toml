@@ -1,3 +1,14 @@
+[project]
+name = "retail-pulse"
+version = "0.1.0"
+description = "RetailPulse API backend"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    # Add any other runtime dependencies your project needs here (e.g., pydantic, httpx)
+]
+
 [tool.ruff]
 line-length = 100
 
