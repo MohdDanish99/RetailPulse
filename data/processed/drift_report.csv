@@ -1,0 +1,9 @@
+feature,psi,drifted
+recency,0.5135,True
+frequency,0.2392,True
+monetary,0.2476,True
+tenure,5.1275,True
+avg_order_value,0.02,False
+orders_last_30d,0.0952,False
+orders_last_90d,0.2331,True
+avg_gap_days,0.04,False

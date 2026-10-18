@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+mlruns/
+mlflow.db
+models/*.joblib
+data/raw/*
+data/processed/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!models/.gitkeep
+# CSVs the API reads at runtime (needed on Vercel)
+!data/processed/forecasts.csv
+!data/processed/segments.csv
+!data/processed/churn_scores.csv
+!data/processed/inventory_plan.csv

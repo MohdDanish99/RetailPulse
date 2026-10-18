@@ -1,0 +1,15 @@
+.venv
+mlruns
+mlflow.db
+models
+notebooks
+tests
+dashboard
+docker
+k8s
+data/raw
+data/processed/transactions.parquet
+data/processed/daily_sales.parquet
+requirements.txt
+requirements-lstm.txt
+requirements-serve.txt
