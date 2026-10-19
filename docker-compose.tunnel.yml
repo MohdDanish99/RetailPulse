@@ -1,0 +1,16 @@
+services:
+  gateway:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    volumes:
+      - ./Caddyfile.tunnel:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - api
+      - dashboard
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: ["tunnel", "--no-autoupdate", "--url", "http://gateway:8080"]
+    depends_on:
+      - gateway

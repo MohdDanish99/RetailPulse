@@ -1,15 +1,15 @@
 services:
   api:
     build: { context: ., dockerfile: docker/Dockerfile.api }
-    ports: ["8000:8000"]
+    ports: ["127.0.0.1:8000:8000"]
     volumes: ["./data:/app/data"]
   dashboard:
     build: { context: ., dockerfile: docker/Dockerfile.dashboard }
-    ports: ["8501:8501"]
+    ports: ["127.0.0.1:8501:8501"]
     volumes: ["./data:/app/data"]
     depends_on: [api]
   mlflow:
     image: ghcr.io/mlflow/mlflow:v2.16.2
     command: mlflow server --host 0.0.0.0 --port 5000 --backend-store-uri sqlite:///mlflow/mlflow.db --default-artifact-root /mlflow/artifacts
-    ports: ["5000:5000"]
+    ports: ["127.0.0.1:5000:5000"]
     volumes: ["./mlflow-data:/mlflow"]

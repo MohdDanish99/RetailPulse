@@ -1,0 +1,9 @@
+:8080 {
+	@api path /health /docs* /openapi.json /forecast/* /segment/* /churn/* /inventory/*
+	handle @api {
+		reverse_proxy api:8000
+	}
+	handle {
+		reverse_proxy dashboard:8501
+	}
+}

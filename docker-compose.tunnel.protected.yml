@@ -1,0 +1,9 @@
+services:
+  cloudflared:
+    command:
+      - tunnel
+      - --no-autoupdate
+      - --url
+      - http://gateway:8080
+      - --allowed-mail
+      - ${ALLOWED_MAIL:?Set ALLOWED_MAIL to the email address allowed to visit}

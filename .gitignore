@@ -5,3 +5,4 @@ __pycache__/
 # MLflow generated files
 mlflow.db
 mlruns/
+.env
